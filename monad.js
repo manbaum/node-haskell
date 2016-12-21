@@ -45,17 +45,12 @@ const    mbind5$ =  M => f => ma => mb => mc => md => me => mbind$(M)(ma)(a => m
 const    mbindN$ =  M => n => {
 	const m = Math.trunc(n);
 	if (isNaN(m) || m < 1) throw new Error("* mbindN$: illegal arguments");
-	const raN = n => f => {
-		const rec = n => args => n > 0 ? x => rec(n - 1)([x].concat(args)) : args.reduce((f, x) => f(x), f);
-		return rec(n)([]);
+	return f => {
+		const bh    = m => y => w => mbind$(M)(m)(x => y(w(x)));
+		const brec  = n => b => n > 0 ? m => brec(n - 1)(y => b(bh(m)(y))) : b($I)(f);
+		return brec(m)($apply);
 	};
-	//    bindRec :: Int -> (t -> t) -> (x1 -> x2 -> ... -> xn -> r) -> m x1 -> m x2 -> ... -> m xn -> m r
-	const bindRec =  n => w => f => n > 0 ? m => bindRec(n - 1)(wm => mbind$(M)(m)(x => w(wm(x))))(f) : w(f);
-	return f => bindRec(m)($I)(raN(m)(f));
 };
-
-//     liftFold$ :: Monad m => (a -> a -> ... -> r) -> [m a] -> m r
-const  liftFold$ =  M => f => ms => ms.length > 0 ? mbind$(M)(ms[0])(x => liftFold$(M)(f(x))(ms.slice(1))) : mret$(M)(f);
 
 //        liftM$ :: Monad m => (a1 -> r) -> m a1 -> m r
 const     liftM$ =  M => f => m1 => mbind$(M)(m1)(x1 => mret$(M)(f(x1)))
@@ -72,14 +67,11 @@ const    liftM5$ =  M => f => m1 => m2 => m3 => m4 => m5 => mbind$(M)(m1)(x1 => 
 const    liftMN$ =  M => n => {
 	const m = Math.trunc(n);
 	if (isNaN(m) || m < 1) throw new Error("* liftMN$: illegal arguments");
-	// return f => $curryN(m)((...ms) => liftFold$(M)(f)(ms));
-	const raN = n => f => {
-		const rec = n => args => n > 0 ? x => rec(n - 1)([x].concat(args)) : args.reduce((f, x) => f(x), f);
-		return rec(n)([]);
+	return f => {
+		const bh    = m => y => w => mbind$(M)(m)(x => y(w(x)));
+		const lrec  = n => l => n > 0 ? m => lrec(n - 1)(y => l(bh(m)(y))) : l(mret$(M))(f);
+		return lrec(m)($apply);
 	};
-	//    bindRec :: Int -> (t -> t) -> (x1 -> x2 -> ... -> xn -> r) -> m x1 -> m x2 -> ... -> m xn -> m r
-	const bindRec =  n => w => f => n > 0 ? m => bindRec(n - 1)(wm => mbind$(M)(m)(x => w(wm(x))))(f) : w(f);
-	return f => bindRec(m)(mret$(M))(raN(m)(f));
 };
 
 //           ap$ :: Monad m => m (a -> b) -> m a -> m b
@@ -97,7 +89,6 @@ module.exports = {
 	  mbind4$,
 	  mbind5$,
 	  mbindN$,
-	liftFold$,
 	   liftM$,
 	  liftM2$,
 	  liftM3$,
