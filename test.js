@@ -39,14 +39,12 @@ const fapply = FrangeT.fapply;
 const ftake  = FrangeT.ftake;
 
 const tIdentity     = v => fcmp(fapply(pure($I))(v))(v);
-const tComposition  = u => v => w => fcmp(fapply(fapply(u)(v))(w))(fapply(u)(fapply(v)(w)));
-const tComposition2 = u => v => w => fcmp(fapply(fapply(fapply(pure($compose))(u))(v))(w))(fapply(u)(fapply(v)(w)));
+const tComposition = u => v => w => fcmp(fapply(fapply(fapply(pure($compose))(u))(v))(w))(fapply(u)(fapply(v)(w)));
 const tHomomorphism = f => x => fcmp(fapply(pure(f))(pure(x)))(pure(f(x)));
 const tInterchange  = u => y => fcmp(fapply(u)(pure(y)))(fapply(pure(f=>f(y)))(u));
 
 const tid = tIdentity;
 const tco = tComposition;
-const tc2 = tComposition2;
 const tho = tHomomorphism;
 const tin = tInterchange;
 
