@@ -22,14 +22,12 @@ const T = class {
 		return Array.from(this.g());
 	}
 };
-
 const take = n => g => function*() {
 	for (let i = 0; i < n; i++) {
 		const v = g.next();
 		if (v.done) break; else yield v.value;
 	}
 };
-
 let t = new T;
 let t5 = Array.from(take(5)(t.g())());
 console.log(JSON.stringify(t5));
@@ -64,5 +62,7 @@ console.log(`tho(x => [x + 1, x * 2])(5): ${tho(x => [x + 1, x * 2])(5)}`);
 console.log(`                 tin(f3)(5): ${tin(f3)(5)}`);
 console.log(`                 tin(f4)(5): ${tin(f4)(5)}`);
 
+console.log(f1.toArray());
+console.log(f2.toArray());
 console.dir(Array.from(f5.apply(pure(2)).apply(pure(3)).stretch(9)));
 console.dir(Array.from(f4.apply(frange(0)($I)).stretch(3)));
