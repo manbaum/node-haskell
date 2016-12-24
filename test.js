@@ -66,3 +66,16 @@ console.log(f1.toArray());
 console.log(f2.toArray());
 console.dir(Array.from(f5.apply(pure(2)).apply(pure(3)).stretch(9)));
 console.dir(Array.from(f4.apply(frange(0)($I)).stretch(3)));
+
+const foldl    = f => m => fa => {
+	const rec  = m => i => i < fa.length ? rec(f(m)(fa.at(i)))(i + 1) : m;
+	return rec(m)(0);
+};
+const $E = m => x => { throw new Error(m + ": " + String(x)); };
+const at = fr => i => foldl(r => x => k => k == 0 ? x : r(k - 1))($E(`TooLarge`))(fr)(i);
+
+let fr = frange(10)($I).map(x => frange(10)(n => n * x));
+let r4 = at(fr)(4).toArray();
+console.log(r4);
+let r14 = at(fr)(14);
+// console.log(r14);
