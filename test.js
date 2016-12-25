@@ -67,12 +67,12 @@ console.log(f2.toArray());
 console.dir(Array.from(f5.apply(pure(2)).apply(pure(3)).stretch(9)));
 console.dir(Array.from(f4.apply(frange(0)($I)).stretch(3)));
 
-const foldl    = f => m => fa => {
-	const rec  = m => i => i < fa.length ? rec(f(m)(fa.at(i)))(i + 1) : m;
-	return rec(m)(0);
+const foldr = f => m => fa => {
+	const rec = i => m => i < fa.length ? rec(i + 1)(f(fa.at(i))(m)) : m;
+	return rec(0)(m);
 };
-const $E = m => x => { throw new Error(m + ": " + String(x)); };
-const at = fr => i => foldl(r => x => k => k == 0 ? x : r(k - 1))($E(`TooLarge`))(fr)(i);
+const $E = m  => x => _ => { throw new Error(m + ": " + String(x)); };
+const at = fr => i => foldr(x => r => k => k == 0 ? x : r(k - 1))($E(`index.out.of.range`)(i))(fr)(i);
 
 let fr = frange(10)($I).map(x => frange(10)(n => n * x));
 let r4 = at(fr)(4).toArray();
