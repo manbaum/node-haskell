@@ -97,15 +97,34 @@ console.log(f2.toArray());
 console.dir(Array.from(f5.apply(pure(2)).apply(pure(3)).stretch(9)));
 console.dir(Array.from(f4.apply(frange(0)($I)).stretch(3)));
 
-const foldr = f => m => fa => {
-	const rec = i => m => i < fa.length ? rec(i + 1)(f(fa.at(i))(m)) : m;
-	return rec(0)(m);
-};
-const $E = m  => x => _ => { throw new Error(m + ": " + String(x)); };
-const at = fr => i => foldr(x => r => k => k == 0 ? x : r(k - 1))($E(`index.out.of.range`)(i))(fr)(i);
 
-let fr = frange(10)($I).map(x => frange(10)(n => n * x));
-let r4 = at(fr)(4).toArray();
-console.log(r4);
-try { let r14 = at(fr)(14); } catch (e) { console.log(e.message); }
-// console.log(r14);
+const testFoldr = _ => {
+	const foldr = f => m => fa => {
+		const rec = i => m => i < fa.length ? rec(i + 1)(f(fa.at(i))(m)) : m;
+		return rec(0)(m);
+	};
+	const $E = m  => x => _ => { throw new Error(m + ": " + String(x)); };
+	const at = fr => i => foldr(x => r => k => k == 0 ? x : r(k - 1))($E(`index.out.of.range`)(i))(fr)(i);
+
+	let fr = frange(10)($I).map(x => frange(10)(n => n * x));
+	let r4 = at(fr)(4).toArray();
+	console.log(r4);
+	try {
+		let r14 = at(fr)(14);
+		console.log(r14);
+	} catch (e) {
+		console.log(e.message);
+	}
+}
+testFoldr();
+
+const checkTCO = _ => {
+	const f = i => { if (i > 5) throw new Error(); else return f(i + 1); };
+	try {
+		f(0);
+	} catch (e) {
+		let a = e.stack.split(/\n/);
+		return a[2] != a[3];
+	}
+};
+console.log(`TCO is ${checkTCO()}`);
