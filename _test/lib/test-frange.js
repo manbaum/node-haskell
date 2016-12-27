@@ -20,25 +20,43 @@ const { $compose	} = require("../../compose");
 const { $apply,
 		$rapply		} = require("../../apply");
 
-const pure = FrangeT.pure;
+const pure            = FrangeT.pure;
 
-const fIdentity     = v =>           ucmp( v.map($I)                                 )( $I(v)                                     );
-const fAssociative  = f => g => v => ucmp( v.map($compose(f)(g))                     )( $compose(v => v.map(f))(v => v.map(g))(v) );
+const fIdentity       = v =>           ucmp( v.map($I)                                 )( $I(v)                                     );
+const fAssociative    = f => g => v => ucmp( v.map($compose(f)(g))                     )( $compose(v => v.map(f))(v => v.map(g))(v) );
 
-const fid = fIdentity;
-const fas = fAssociative;
+const fid             = fIdentity;
+const fas             = fAssociative;
 
-const aIdentity     = v =>           ucmp( pure($I).apply(v)                         )( v                                         );
-const aComposition  = u => v => w => ucmp( pure($compose).apply(u).apply(v).apply(w) )( u.apply(v.apply(w))                       );
-const aHomomorphism = f => x =>      ucmp( pure(f).apply(pure(x))                    )( pure(f(x))                                );
-const aInterchange  = u => y =>      ucmp( u.apply(pure(y))                          )( pure($rapply(y)).apply(u)                 );
+const aIdentity       = v =>           ucmp( pure($I).apply(v)                         )( v                                         );
+const aComposition    = u => v => w => ucmp( pure($compose).apply(u).apply(v).apply(w) )( u.apply(v.apply(w))                       );
+const aHomomorphism   = f => x =>      ucmp( pure(f).apply(pure(x))                    )( pure(f(x))                                );
+const aInterchange    = u => y =>      ucmp( u.apply(pure(y))                          )( pure($rapply(y)).apply(u)                 );
 
-const aid = aIdentity;
-const aco = aComposition;
-const aho = aHomomorphism;
-const ain = aInterchange;
+const aid             = aIdentity;
+const aco             = aComposition;
+const aho             = aHomomorphism;
+const ain             = aInterchange;
 
-const Test = [
+const mempty          = FrangeT.mempty;
+
+const oLIdentity      = v =>           ucmp( mempty.concat(v)                          )( v                                         );
+const oRIdentity      = v =>           ucmp( v.concat(mempty)                          )( v                                         );
+const oCommutative    = u => v => w => ucmp( u.concat(v).concat(w)                     )( u.concat(v.concat(w))                     );
+
+const oli             = oLIdentity;
+const ori             = oRIdentity;
+const oco             = oCommutative;
+
+const mLIdentity      = v => f =>      ucmp( pure(v).mbind(f)                          )( f(v)                                      );
+const mRIdentity      = v =>           ucmp( v.mbind(pure)                             )( v                                         );
+const mCommutative    = u => v => w => ucmp( u.mbind(x => v(x).mbind(w))               )( u.mbind(v).mbind(w)                       );
+
+const mli             = mLIdentity;
+const mri             = mRIdentity;
+const mco             = mCommutative;
+
+const Test            = [
 	[	"default constructor.",
 		() => {
 			const f = new FrangeT();
@@ -198,9 +216,82 @@ const Test = [
 				&& ain(g2)(n)
 				&& ain(g3)(n);
 		}],
-	[	"",
+	[	"Law of Monoid: Left Identity",
 		() => {
-
+			const f1 = frange(10)(n => [2 * n - 1, 2 * n, 2 * n + 1]),
+				  f2 = frange(10)(n => frange(n)($I));
+			return oli(f1)
+				&& oli(f2);
+		}],
+	[	"Law of Monoid: Right Identity",
+		() => {
+			const f1 = frange(10)(n => [2 * n - 1, 2 * n, 2 * n + 1]),
+				  f2 = frange(10)(n => frange(n)($I));
+			return ori(f1)
+				&& ori(f2);
+		}],
+	[	"Law of Monoid: Commutative",
+		() => {
+			const f1 = frange(10)(n => [2 * n - 1, 2 * n, 2 * n + 1]),
+				  f2 = frange(10)(n => frange(n)($I)),
+				  f3 = frange(10)(n => n + 1);
+			return oco(f1)(f1)(f1)
+				&& oco(f1)(f1)(f2)
+				&& oco(f1)(f1)(f3)
+				&& oco(f1)(f2)(f1)
+				&& oco(f1)(f2)(f2)
+				&& oco(f1)(f2)(f3)
+				&& oco(f1)(f3)(f1)
+				&& oco(f1)(f3)(f2)
+				&& oco(f1)(f3)(f3)
+				&& oco(f2)(f1)(f1)
+				&& oco(f2)(f1)(f2)
+				&& oco(f2)(f1)(f3)
+				&& oco(f2)(f2)(f1)
+				&& oco(f2)(f2)(f2)
+				&& oco(f2)(f2)(f3)
+				&& oco(f2)(f3)(f1)
+				&& oco(f2)(f3)(f2)
+				&& oco(f2)(f3)(f3)
+				&& oco(f3)(f1)(f1)
+				&& oco(f3)(f1)(f2)
+				&& oco(f3)(f1)(f3)
+				&& oco(f3)(f2)(f1)
+				&& oco(f3)(f2)(f2)
+				&& oco(f3)(f2)(f3)
+				&& oco(f3)(f3)(f1)
+				&& oco(f3)(f3)(f2)
+				&& oco(f3)(f3)(f3);
+		}],
+	[	"Law of Monad: Left Ideintity",
+		() => {
+			const n  = [ 1, -2, 3, Math.trunc(Math.random() * 10000) ],
+				  g1 = a => a.map(x => frange(3)($K(x * 2))),
+				  g2 = a => a.map(x => frange(3)($K([x + 1, x + 2])));
+			return mli(n)(g1)
+				&& mli(n)(g2);
+		}],
+	[	"Law of Monad: Right Identity",
+		() => {
+			const f1 = frange(10)(n => [2 * n - 1, 2 * n, 2 * n + 1]),
+				  f2 = frange(10)(n => frange(n)($I));
+			return mri(f1)
+				&& mri(f2);
+		}],
+	[	"Law of Monad: Commutative",
+		() => {
+			const f1 = frange(10)(n => [2 * n - 1, 2 * n, 2 * n + 1]),
+				  f2 = frange(10)(n => frange(n)($I)),
+				  g1 = a => frange(3)(a.map(x => x * 2)),
+				  g2 = a => frange(3)(a.map(x => x + 2));
+			return mco(f1)(g1)(g1)
+				&& mco(f1)(g2)(g2)
+				&& mco(f2)(g1)(g1)
+				&& mco(f2)(g2)(g2)
+				&& mco(f1)(g1)(g2)
+				&& mco(f1)(g2)(g1)
+				&& mco(f2)(g1)(g2)
+				&& mco(f2)(g2)(g1);
 		}],
 	[	"",
 		() => {
@@ -224,7 +315,7 @@ const Test = [
 		}],
 ];
 
-const runTest = (T) => {
+const runTest         = (T) => {
 	T.forEach(([description, test]) => {
 		if (description) {
 			let result, ex;
@@ -238,7 +329,7 @@ const runTest = (T) => {
 		}
 	});
 };
-const printResult = (desc, result, e) => {
+const printResult     = (desc, result, e) => {
 	const s = result ? "  Ok" : "Fail";
 	console.log(`${s} : ${desc}`);
 	if (e) {
