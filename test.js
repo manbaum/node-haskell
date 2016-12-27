@@ -6,7 +6,7 @@ let { $I, $K, $S                                            } = require("./ski")
 let { $apply                                                } = require("./apply");
 let { $compose                                              } = require("./compose");
 let { mbind$, mret$, mbindN$, liftMN$                       } = require("./monad");
-let { FrangeT, frange, fcmp                                 } = require("./lib/frange");
+let { FArrayT, farray, fcmp                                 } = require("./lib/farray");
 
 let f    = x => y => z => w => [x(y), x(z), x(w)];
 let y1 = mbindN$(Array)(4)(f)([x => 2 * x])([11,12])([21,22])([31,32,33]);
@@ -32,7 +32,7 @@ let t = new T;
 let t5 = Array.from(take(5)(t.g())());
 console.log(JSON.stringify(t5));
 
-const pure   = FrangeT.pure;
+const pure   = FArrayT.pure;
 
 const fIdentity     = v => fcmp(v.map($I))($I(v));
 const fAssociative  = f => g => v => fcmp(v.map($compose(f)(g)))($compose(v => v.map(f))(v => v.map(g))(v));
@@ -53,11 +53,11 @@ const ain = aInterchange;
 const mPure        = v => fcmp(v.mappend())() && fcmp()()
 const mAssociative = v => fcmp()()
 
-let f1 = frange(3)(3);
-let f2 = frange(3)($I);
-let f3 = frange(3)(n => x => n + x);
-let f4 = frange(3)(n => x => [n, x]);
-let f5 = frange(3)(n => x => y => [n + x + y, n * x * y]);
+let f1 = farray(3)(3);
+let f2 = farray(3)($I);
+let f3 = farray(3)(n => x => n + x);
+let f4 = farray(3)(n => x => [n, x]);
+let f5 = farray(3)(n => x => y => [n + x + y, n * x * y]);
 
 let g1 = x => x + 1;
 let g2 = x => x * 8;
@@ -95,7 +95,7 @@ console.log(`     ain(f4)(5): ${ain(f4)(5)}`);
 console.log(f1.toArray());
 console.log(f2.toArray());
 console.dir(Array.from(f5.apply(pure(2)).apply(pure(3)).stretch(9)));
-console.dir(Array.from(f4.apply(frange(0)($I)).stretch(3)));
+console.dir(Array.from(f4.apply(farray(0)($I)).stretch(3)));
 
 
 const testFoldr = _ => {
@@ -106,7 +106,7 @@ const testFoldr = _ => {
 	const $E = m  => x => _ => { throw new Error(m + ": " + String(x)); };
 	const at = fr => i => foldr(x => r => k => k == 0 ? x : r(k - 1))($E(`index.out.of.range`)(i))(fr)(i);
 
-	let fr = frange(10)($I).map(x => frange(10)(n => n * x));
+	let fr = farray(10)($I).map(x => farray(10)(n => n * x));
 	let r4 = at(fr)(4).toArray();
 	console.log(r4);
 	try {

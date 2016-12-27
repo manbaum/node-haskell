@@ -1,8 +1,8 @@
 
 "use strict"
 
-const { FrangeT,
-		frange,
+const { FArrayT,
+		farray,
 		fstart,
 		flength,
 		freversed,
@@ -12,7 +12,7 @@ const { FrangeT,
 		fstretch,
 		fslice,
 		freverse,
-		ucmp		} = require("../../lib/frange");
+		ucmp		} = require("../../lib/farray");
 const { $S,
 		$K,
 		$I 			} = require("../../ski");
@@ -20,7 +20,7 @@ const { $compose	} = require("../../compose");
 const { $apply,
 		$rapply		} = require("../../apply");
 
-const pure            = FrangeT.pure;
+const pure            = FArrayT.pure;
 
 const fIdentity       = v =>           ucmp( v.map($I)                                 )( $I(v)                                     );
 const fAssociative    = f => g => v => ucmp( v.map($compose(f)(g))                     )( $compose(v => v.map(f))(v => v.map(g))(v) );
@@ -38,7 +38,7 @@ const aco             = aComposition;
 const aho             = aHomomorphism;
 const ain             = aInterchange;
 
-const mempty          = FrangeT.mempty;
+const mempty          = FArrayT.mempty;
 
 const oLIdentity      = v =>           ucmp( mempty.concat(v)                          )( v                                         );
 const oRIdentity      = v =>           ucmp( v.concat(mempty)                          )( v                                         );
@@ -59,8 +59,8 @@ const mco             = mCommutative;
 const Test            = [
 	[	"default constructor.",
 		() => {
-			const f = new FrangeT();
-			return f instanceof FrangeT
+			const f = new FArrayT();
+			return f instanceof FArrayT
 				&& f._at       === $I
 				&& f._start    === 0
 				&& f._length   === Infinity
@@ -75,8 +75,8 @@ const Test            = [
 			      i1	 = 0,
 			      i2	 = 2,
 			      i3	 = len - 1;
-			const f      = new FrangeT(at, start, len, rev);
-			return f instanceof FrangeT
+			const f      = new FArrayT(at, start, len, rev);
+			return f instanceof FArrayT
 				&& f._at       		=== at
 				&& f._start    		=== start
 				&& f._length   		=== len
@@ -90,38 +90,38 @@ const Test            = [
 	[	"constructor with invalid `start`.",
 		() => {
 			try {
-				const f = new FrangeT($I, 'a');
+				const f = new FArrayT($I, 'a');
 				return false;
 			} catch (e) {
-				if (e.message != "* FrangeT: start.need.number") throw e;
+				if (e.message != "* FArrayT: start.need.number") throw e;
 			}
 			try {
-				const f = new FrangeT($I, 1/0);
+				const f = new FArrayT($I, 1/0);
 				return false;
 			} catch (e) {
-				if (e.message != "* FrangeT: start.need.finity.number") throw e;
+				if (e.message != "* FArrayT: start.need.finity.number") throw e;
 			}
 			try {
-				const f = new FrangeT($I, -1/0);
+				const f = new FArrayT($I, -1/0);
 				return false;
 			} catch (e) {
-				if (e.message != "* FrangeT: start.need.finity.number") throw e;
+				if (e.message != "* FArrayT: start.need.finity.number") throw e;
 			}
 			return true;
 		}],
 	[	"constructor with invalid `length`.",
 		() => {
 			try {
-				const f = new FrangeT($I, 0, 'a');
+				const f = new FArrayT($I, 0, 'a');
 				return false;
 			} catch (e) {
-				if (e.message != "* FrangeT: length.need.number") throw e;
+				if (e.message != "* FArrayT: length.need.number") throw e;
 			}
 			try {
-				const f = new FrangeT($I, 0, -1);
+				const f = new FArrayT($I, 0, -1);
 				return false;
 			} catch (e) {
-				if (e.message != "* FrangeT: length.need.positive.number") throw e;
+				if (e.message != "* FArrayT: length.need.positive.number") throw e;
 			}
 			return true;
 		}],
@@ -130,29 +130,29 @@ const Test            = [
 			const start = Math.trunc(Math.random() * 10000) * (Math.random() > 0.5 ? 1 : -1),
 				  len   = Math.trunc(Math.random() * 10000),
 				  rev   = Math.random() > 0.5,
-				  f     = new FrangeT($I, start, len, rev);
+				  f     = new FArrayT($I, start, len, rev);
 			return f.start      === start
 				&& f.length     === len
 				&& f.isReversed === rev;
 		}],
 	[	"method `toArray()`.",
 		() => {
-			const f = new FrangeT($I, 10, 10, true),
+			const f = new FArrayT($I, 10, 10, true),
 				  a = f.toArray(),
 				  v = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
 			return ucmp(a)(v);
 		}],
 	[	"Law of Functor: Identity.",
 		() => {
-			const f1 = frange(10)(n => [2 * n - 1, 2 * n, 2 * n + 1]),
-				  f2 = frange(10)(n => frange(n)($I));
+			const f1 = farray(10)(n => [2 * n - 1, 2 * n, 2 * n + 1]),
+				  f2 = farray(10)(n => farray(n)($I));
 			return fid(f1)
 				&& fid(f2);
 		}],
 	[	"Law of Functor: Associative.",
 		() => {
-			const f1 = frange(10)(n => [2 * n - 1, 2 * n, 2 * n + 1]),
-				  f2 = frange(10)(n => frange(n)($I)),
+			const f1 = farray(10)(n => [2 * n - 1, 2 * n, 2 * n + 1]),
+				  f2 = farray(10)(n => farray(n)($I)),
 				  g1 = a => a.map(x => x + 1),
 				  g2 = a => a.map(x => x * 2),
 				  g3 = a => a.map(x => [x + 1, x + 2]);
@@ -171,18 +171,18 @@ const Test            = [
 		}],
 	[	"Law of Applicative: Identity.",
 		() => {
-			const f1 = frange(10)(n => [2 * n - 1, 2 * n, 2 * n + 1]),
-				  f2 = frange(10)(n => frange(n)($I));
+			const f1 = farray(10)(n => [2 * n - 1, 2 * n, 2 * n + 1]),
+				  f2 = farray(10)(n => farray(n)($I));
 			return aid(f1)
 				&& aid(f2);
 		}],
 	[	"Law of Applicative: Composition.",
 		() => {
-			const f1 = frange(10)(n => [2 * n - 1, 2 * n, 2 * n + 1]),
-				  f2 = frange(10)(n => frange(n)($I)),
-				  g1 = frange(3)($K(a => a.map(x => x + 1))),
-				  g2 = frange(3)($K(a => a.map(x => x * 2))),
-				  g3 = frange(3)($K(a => a.map(x => [x + 1, x + 2])));
+			const f1 = farray(10)(n => [2 * n - 1, 2 * n, 2 * n + 1]),
+				  f2 = farray(10)(n => farray(n)($I)),
+				  g1 = farray(3)($K(a => a.map(x => x + 1))),
+				  g2 = farray(3)($K(a => a.map(x => x * 2))),
+				  g3 = farray(3)($K(a => a.map(x => [x + 1, x + 2])));
 			return aco(g1)(g1)(f1)
 				&& aco(g1)(g2)(f1)
 				&& aco(g2)(g1)(f1)
@@ -209,32 +209,32 @@ const Test            = [
 	[	"Law of Applicative: Interchange.",
 		() => {
 			const n  = [ 1, -2, 3, Math.trunc(Math.random() * 10000) ],
-				  g1 = frange(3)($K(a => a.map(x => x + 1))),
-				  g2 = frange(3)($K(a => a.map(x => x * 2))),
-				  g3 = frange(3)($K(a => a.map(x => [x + 1, x + 2])));
+				  g1 = farray(3)($K(a => a.map(x => x + 1))),
+				  g2 = farray(3)($K(a => a.map(x => x * 2))),
+				  g3 = farray(3)($K(a => a.map(x => [x + 1, x + 2])));
 			return ain(g1)(n)
 				&& ain(g2)(n)
 				&& ain(g3)(n);
 		}],
 	[	"Law of Monoid: Left Identity",
 		() => {
-			const f1 = frange(10)(n => [2 * n - 1, 2 * n, 2 * n + 1]),
-				  f2 = frange(10)(n => frange(n)($I));
+			const f1 = farray(10)(n => [2 * n - 1, 2 * n, 2 * n + 1]),
+				  f2 = farray(10)(n => farray(n)($I));
 			return oli(f1)
 				&& oli(f2);
 		}],
 	[	"Law of Monoid: Right Identity",
 		() => {
-			const f1 = frange(10)(n => [2 * n - 1, 2 * n, 2 * n + 1]),
-				  f2 = frange(10)(n => frange(n)($I));
+			const f1 = farray(10)(n => [2 * n - 1, 2 * n, 2 * n + 1]),
+				  f2 = farray(10)(n => farray(n)($I));
 			return ori(f1)
 				&& ori(f2);
 		}],
 	[	"Law of Monoid: Commutative",
 		() => {
-			const f1 = frange(10)(n => [2 * n - 1, 2 * n, 2 * n + 1]),
-				  f2 = frange(10)(n => frange(n)($I)),
-				  f3 = frange(10)(n => n + 1);
+			const f1 = farray(10)(n => [2 * n - 1, 2 * n, 2 * n + 1]),
+				  f2 = farray(10)(n => farray(n)($I)),
+				  f3 = farray(10)(n => n + 1);
 			return oco(f1)(f1)(f1)
 				&& oco(f1)(f1)(f2)
 				&& oco(f1)(f1)(f3)
@@ -266,24 +266,24 @@ const Test            = [
 	[	"Law of Monad: Left Ideintity",
 		() => {
 			const n  = [ 1, -2, 3, Math.trunc(Math.random() * 10000) ],
-				  g1 = a => a.map(x => frange(3)($K(x * 2))),
-				  g2 = a => a.map(x => frange(3)($K([x + 1, x + 2])));
+				  g1 = a => a.map(x => farray(3)($K(x * 2))),
+				  g2 = a => a.map(x => farray(3)($K([x + 1, x + 2])));
 			return mli(n)(g1)
 				&& mli(n)(g2);
 		}],
 	[	"Law of Monad: Right Identity",
 		() => {
-			const f1 = frange(10)(n => [2 * n - 1, 2 * n, 2 * n + 1]),
-				  f2 = frange(10)(n => frange(n)($I));
+			const f1 = farray(10)(n => [2 * n - 1, 2 * n, 2 * n + 1]),
+				  f2 = farray(10)(n => farray(n)($I));
 			return mri(f1)
 				&& mri(f2);
 		}],
 	[	"Law of Monad: Commutative",
 		() => {
-			const f1 = frange(10)(n => [2 * n - 1, 2 * n, 2 * n + 1]),
-				  f2 = frange(10)(n => frange(n)($I)),
-				  g1 = a => frange(3)(a.map(x => x * 2)),
-				  g2 = a => frange(3)(a.map(x => x + 2));
+			const f1 = farray(10)(n => [2 * n - 1, 2 * n, 2 * n + 1]),
+				  f2 = farray(10)(n => farray(n)($I)),
+				  g1 = a => farray(3)(a.map(x => x * 2)),
+				  g2 = a => farray(3)(a.map(x => x + 2));
 			return mco(f1)(g1)(g1)
 				&& mco(f1)(g2)(g2)
 				&& mco(f2)(g1)(g1)
