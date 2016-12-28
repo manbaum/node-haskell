@@ -21,17 +21,18 @@ const { $apply,
 		$rapply		} = require("../../apply");
 
 const pure            = FArrayT.pure;
+const fmap            = FArrayT.fmap;
 
-const fIdentity       = v =>           ucmp( v.map($I)                                 )( $I(v)                                     );
-const fAssociative    = f => g => v => ucmp( v.map($compose(f)(g))                     )( $compose(v => v.map(f))(v => v.map(g))(v) );
+const fIdentity       = v =>           ucmp( fmap($I)(v)             )( $I(v)                         );
+const fAssociative    = f => g => v => ucmp( fmap($compose(f)(g))(v) )( $compose(fmap(f))(fmap(g))(v) );
 
 const fid             = fIdentity;
 const fas             = fAssociative;
 
-const aIdentity       = v =>           ucmp( pure($I).apply(v)                         )( v                                         );
-const aComposition    = u => v => w => ucmp( pure($compose).apply(u).apply(v).apply(w) )( u.apply(v.apply(w))                       );
-const aHomomorphism   = f => x =>      ucmp( pure(f).apply(pure(x))                    )( pure(f(x))                                );
-const aInterchange    = u => y =>      ucmp( u.apply(pure(y))                          )( pure($rapply(y)).apply(u)                 );
+const aIdentity       = v =>           ucmp( pure($I).apply(v)                         )( v                         );
+const aComposition    = u => v => w => ucmp( pure($compose).apply(u).apply(v).apply(w) )( u.apply(v.apply(w))       );
+const aHomomorphism   = f => x =>      ucmp( pure(f).apply(pure(x))                    )( pure(f(x))                );
+const aInterchange    = u => y =>      ucmp( u.apply(pure(y))                          )( pure($rapply(y)).apply(u) );
 
 const aid             = aIdentity;
 const aco             = aComposition;
@@ -40,17 +41,17 @@ const ain             = aInterchange;
 
 const mempty          = FArrayT.mempty;
 
-const oLIdentity      = v =>           ucmp( mempty.concat(v)                          )( v                                         );
-const oRIdentity      = v =>           ucmp( v.concat(mempty)                          )( v                                         );
-const oCommutative    = u => v => w => ucmp( u.concat(v).concat(w)                     )( u.concat(v.concat(w))                     );
+const oLIdentity      = v =>           ucmp( mempty.concat(v)      )( v                     );
+const oRIdentity      = v =>           ucmp( v.concat(mempty)      )( v                     );
+const oCommutative    = u => v => w => ucmp( u.concat(v).concat(w) )( u.concat(v.concat(w)) );
 
 const oli             = oLIdentity;
 const ori             = oRIdentity;
 const oco             = oCommutative;
 
-const mLIdentity      = v => f =>      ucmp( pure(v).mbind(f)                          )( f(v)                                      );
-const mRIdentity      = v =>           ucmp( v.mbind(pure)                             )( v                                         );
-const mCommutative    = u => v => w => ucmp( u.mbind(x => v(x).mbind(w))               )( u.mbind(v).mbind(w)                       );
+const mLIdentity      = v => f =>      ucmp( pure(v).mbind(f)            )( f(v)                );
+const mRIdentity      = v =>           ucmp( v.mbind(pure)               )( v                   );
+const mCommutative    = u => v => w => ucmp( u.mbind(x => v(x).mbind(w)) )( u.mbind(v).mbind(w) );
 
 const mli             = mLIdentity;
 const mri             = mRIdentity;
@@ -83,9 +84,24 @@ const Test            = [
 				&& f._reversed 		=== rev
 				&& f.at(i1)     	=== at(start - i1 - 1)
 				&& f.at(i2)     	=== at(start - i2 - 1)
-				&& f.at(i3)     	=== at(start - i3 - 1)			
-				&& f.at(-1)			=== undefined
-				&& f.at(len)   		=== undefined;
+				&& f.at(i3)     	=== at(start - i3 - 1);
+		}],
+	[	"call at() with index out of range",
+		() => {
+			const f = new FArrayT($I, 1, 10, false);
+			try {
+				f.at(-1);
+				return false;
+			} catch (e) {
+				if (e.message != "* FArrayT~at: index.out.of.range") throw e;
+			}
+			try {
+				f.at(10);
+				return false;
+			} catch (e) {
+				if (e.message != "* FArrayT~at: index.out.of.range") throw e;
+			}
+			return true;
 		}],
 	[	"constructor with invalid `start`.",
 		() => {

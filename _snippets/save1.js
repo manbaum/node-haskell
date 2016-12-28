@@ -51,3 +51,32 @@ const AmendT = class {
 		return this._f(x);
 	}
 };
+
+	p(nOffset, nLength) {
+		const    realStart = this._start - (this._reversed ? this._length : 0           ),
+			       realEnd = this._start + (this._reversed ? 0            : this._length),
+			    rangeLimit = limit(0, this._length);
+
+		const     tmpStart = nOffset,// < 0 ? nOffset + this._length : nOffset,
+			        tmpEnd = tmpStart + nLength,
+			   adjustStart = rangeLimit(tmpStart),
+			     adjustEnd = rangeLimit(tmpEnd);
+
+		const    wantStart = this._reversed ? realEnd - adjustStart : realStart + adjustStart,
+			       wantEnd = this._reversed ? realEnd - adjustEnd   : realStart + adjustEnd,
+			    wantLength = Math.abs(wantEnd - wantStart),
+			       wantRev = (nLength < 0) != this._reversed;
+
+		return {
+			___realStart: realStart,
+			_____realEnd: realEnd,
+			____tmpStart: tmpStart,
+			______tmpEnd: tmpEnd,
+			_adjustStart: adjustStart,
+			___adjustEnd: adjustEnd,
+			___wantStart: wantStart,
+			_____wantEnd: wantEnd,
+			__wantLength: wantLength,
+			_____wantRev: wantRev
+		};
+	}

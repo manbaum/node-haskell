@@ -128,3 +128,8 @@ const checkTCO = _ => {
 	}
 };
 console.log(`TCO is ${checkTCO()}`);
+
+let f6 = f2.slide(3).stretch(15).reverse();
+let f7 = f6.changeLength();
+f6.show();
+f7.show();
