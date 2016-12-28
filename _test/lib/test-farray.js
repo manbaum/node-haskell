@@ -83,7 +83,7 @@ const Test            = [
 				&& f._reversed 		=== rev
 				&& f.at(i1)     	=== at(start - i1 - 1)
 				&& f.at(i2)     	=== at(start - i2 - 1)
-				&& f.at(i3)     	=== at(start - i3 - 1)
+				&& f.at(i3)     	=== at(start - i3 - 1)			
 				&& f.at(-1)			=== undefined
 				&& f.at(len)   		=== undefined;
 		}],
