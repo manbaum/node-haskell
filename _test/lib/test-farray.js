@@ -1,24 +1,34 @@
 
 "use strict"
 
-const { FArrayT,
-		farray,
-		fstart,
-		flength,
-		freversed,
-		fat,
-		fmove,
-		fslide,
-		fstretch,
-		fslice,
-		freverse,
-		ucmp		} = require("../../lib/farray");
 const { $S,
 		$K,
 		$I 			} = require("../../ski");
-const { $compose	} = require("../../compose");
 const { $apply,
 		$rapply		} = require("../../apply");
+const { $compose	} = require("../../compose");
+const { FArrayT,
+		farray,
+		fastart,
+		famove,
+		faslide,
+		falength,
+		faclen,
+		fastretch,
+		fareversed,
+		faflip,
+		fareverse,
+		faturnover,
+		faat,
+		farat,
+		faslice,
+		farslice,
+		fahead,
+		fatail,
+		falast,
+		fainit,
+		facmp,
+		ucmp		} = require("../../lib/farray");
 
 const pure            = FArrayT.pure;
 const fmap            = FArrayT.fmap;
