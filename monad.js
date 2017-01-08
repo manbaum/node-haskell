@@ -41,15 +41,14 @@ const    mbind4$ =  M => f => ma => mb => mc => md => mbind$(M)(ma)(a => mbind$(
 //       mbind5$ :: Monad m => (a -> b -> c -> d -> e -> m r) -> m a -> m b -> m c -> m d -> m e -> m r
 const    mbind5$ =  M => f => ma => mb => mc => md => me => mbind$(M)(ma)(a => mbind$(M)(mb)(b => mbind$(M)(mc)(c => mbind$(M)(md)(d => mbind$(M)(me)(e => f(a)(b)(c)(d)(e))))));
 
-//       mbindN$ :: Monad m => n -> (x1 -> x2 -> ... -> xn -> m r) -> m x1 -> m x2 -> ... -> m xn -> m r
+//       mrecN$  :: Monad m => Int -> (x1 -> x2 -> ... -> xn -> m r) -> (m rn -> m r) -> (((xm -> rm) -> xm -> rm) -> xm -> rm) -> m x1 -> m x2 -> ... -> m xn -> m r
+//       mrecN$  :: Monad m => Int -> (x1 -> x2 -> ... -> xn ->   r) -> (  rn -> m r) -> (((xm -> rm) -> xm -> rm) -> xm -> rm) -> m x1 -> m x2 -> ... -> m xn -> m r
+const    mrecN$  =  M => n => f  => t  => b  => n > 0 ? m => mrecN$(M)(n - 1)(f)(t)(y => b(w => mbind$(M)(m)(x => y(w(x))))) : b(t)(f);
+//       mbindN$ :: Monad m => Int -> (x1 -> x2 -> ... -> xn -> m r) -> m x1 -> m x2 -> ... -> m xn -> m r
 const    mbindN$ =  M => n => {
 	const m = Math.trunc(n);
 	if (isNaN(m) || m < 1) throw new Error("* mbindN$: illegal arguments");
-	return f => {
-		const bh    = m => y => w => mbind$(M)(m)(x => y(w(x)));
-		const brec  = n => b => n > 0 ? m => brec(n - 1)(y => b(bh(m)(y))) : b($I)(f);
-		return brec(m)($apply);
-	};
+	return f => mrecN$(M)(m)(f)($I)($apply);
 };
 
 //        liftM$ :: Monad m => (a1 -> r) -> m a1 -> m r
@@ -67,11 +66,7 @@ const    liftM5$ =  M => f => m1 => m2 => m3 => m4 => m5 => mbind$(M)(m1)(x1 => 
 const    liftMN$ =  M => n => {
 	const m = Math.trunc(n);
 	if (isNaN(m) || m < 1) throw new Error("* liftMN$: illegal arguments");
-	return f => {
-		const bh    = m => y => w => mbind$(M)(m)(x => y(w(x)));
-		const lrec  = n => l => n > 0 ? m => lrec(n - 1)(y => l(bh(m)(y))) : l(mret$(M))(f);
-		return lrec(m)($apply);
-	};
+	return f => mrecN$(M)(m)(f)(mret$(M))($apply);
 };
 
 //           ap$ :: Monad m => m (a -> b) -> m a -> m b

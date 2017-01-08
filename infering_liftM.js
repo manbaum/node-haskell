@@ -6,6 +6,7 @@ b3  = f3 => m3 => m2 => m1 => bind$(M)(m3)(x3 => bind$(M)(m2)(x2 => bind$(M)(m1)
 
 // fix :: ((t1 -> t) -> t1 -> t) -> t1 -> t
 fix = y => x => y(x => fix(y)(x))(x)
+fix = y => y(fix(y))
 
 br = n => f => w => n > 0 ? m => br(n - 1)(f)( wm => bind$(M)(m) ( x => w(wm(x)) ) ) : w(f);
 
