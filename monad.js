@@ -23,12 +23,12 @@ const dropMLDef$ =  M => m => k => mbind$(M)(m)(_ => k);
 const    mbindR$ =  M => f => x => mbind$(M)(x)(f);
 
 //        mjoin$ :: Monad m => m (m a) -> m a
-const     mjoin$ =  M => x => mbind$(M)($I);
+const     mjoin$ =  M => x => mbind$(M)(x)($I);
 
 //         mapM$ :: Monad m => (a -> m b) -> [a] -> m [b]
 const      mapM$ =  M => f => as => {
-	//    k :: m [b] -> m b -> m [b]
-	const k =  mab => mb => mbind$(M)(mab)(ab => mbind$(M)(mb)(b => ab.concat(b)));
+	//    k :: (m [b], a) -> m [b]
+	const k =  (r, a) => mbind$(M)(r)(xs => mbind$(M)(f(a))(x => mret$(M)(xs.concat([x]))));
 	return as.reduce(k, mret$(M)([]));
 };
 
@@ -41,8 +41,8 @@ const    mbind4$ =  M => f => ma => mb => mc => md => mbind$(M)(ma)(a => mbind$(
 //       mbind5$ :: Monad m => (a -> b -> c -> d -> e -> m r) -> m a -> m b -> m c -> m d -> m e -> m r
 const    mbind5$ =  M => f => ma => mb => mc => md => me => mbind$(M)(ma)(a => mbind$(M)(mb)(b => mbind$(M)(mc)(c => mbind$(M)(md)(d => mbind$(M)(me)(e => f(a)(b)(c)(d)(e))))));
 
-//       mrecN$  :: Monad m => Int -> (x1 -> x2 -> ... -> xn -> m r) -> (m rn -> m r) -> (((xm -> rm) -> xm -> rm) -> xm -> rm) -> m x1 -> m x2 -> ... -> m xn -> m r
-//       mrecN$  :: Monad m => Int -> (x1 -> x2 -> ... -> xn ->   r) -> (  rn -> m r) -> (((xm -> rm) -> xm -> rm) -> xm -> rm) -> m x1 -> m x2 -> ... -> m xn -> m r
+//       mrecN$  :: Monad m => Int -> (x1 -> x2 -> ... -> xn -> m r) -> (m rn -> m r) -> ((xm -> rm) -> xm -> rm) -> m x1 -> m x2 -> ... -> m xn -> m r
+//       mrecN$  :: Monad m => Int -> (x1 -> x2 -> ... -> xn ->   r) -> (  rn -> m r) -> ((xm -> rm) -> xm -> rm) -> m x1 -> m x2 -> ... -> m xn -> m r
 const    mrecN$  =  M => n => f  => t  => b  => n > 0 ? m => mrecN$(M)(n - 1)(f)(t)(y => b(w => mbind$(M)(m)(x => y(w(x))))) : b(t)(f);
 //       mbindN$ :: Monad m => Int -> (x1 -> x2 -> ... -> xn -> m r) -> m x1 -> m x2 -> ... -> m xn -> m r
 const    mbindN$ =  M => n => {
